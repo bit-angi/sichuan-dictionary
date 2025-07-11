@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>四川方言词典</title>
     <style>
-        /* 基础样式 */
+        /* 样式同你原代码，无改动 */
         body {
             font-family: 'Arial', sans-serif;
-            background-color: #70a1d7;  /* 天蓝色背景 */
+            background-color: #70a1d7;
             max-width: 800px;
             margin: auto;
             padding: 20px;
@@ -17,15 +17,12 @@
             box-sizing: border-box;
             color: #333;
         }
-
         h1 {
             text-align: center;
             color: #2c3e50;
             font-size: 2.5em;
             margin-bottom: 20px;
         }
-
-        /* 输入框样式 */
         input, select, button {
             width: 100%;
             padding: 12px;
@@ -35,18 +32,13 @@
             font-size: 16px;
             box-sizing: border-box;
         }
-
         input:focus, select:focus, button:focus {
             outline: none;
             border-color: #3498db;
         }
-
-        /* 搜索框样式 */
         #search {
             background-color: #f9f9f9;
         }
-
-        /* 卡片样式 */
         .card {
             background-color: white;
             padding: 15px;
@@ -56,22 +48,18 @@
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             cursor: pointer;
         }
-
         .card:hover {
             transform: translateY(-5px);
             box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
         }
-
         .card h3 {
             font-size: 1.8em;
             color: #2c3e50;
         }
-
         .card p {
             font-size: 1.1em;
             color: #555;
         }
-
         .badge {
             background-color: #3498db;
             color: white;
@@ -80,8 +68,6 @@
             margin-right: 5px;
             font-size: 0.9em;
         }
-
-        /* 弹出对话框 */
         #dialog {
             display: none;
             position: fixed;
@@ -94,7 +80,6 @@
             align-items: center;
             animation: fadeIn 0.3s ease;
         }
-
         #dialog .content {
             background: white;
             padding: 20px;
@@ -104,29 +89,22 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             animation: slideIn 0.5s ease;
         }
-
         #dialog .content h3 {
             font-size: 2em;
             color: #2c3e50;
         }
-
         #dialog .content p {
             font-size: 1.2em;
             color: #555;
         }
-
-        /* 动画效果 */
         @keyframes fadeIn {
             0% { opacity: 0; }
             100% { opacity: 1; }
         }
-
         @keyframes slideIn {
             0% { transform: translateY(-30px); opacity: 0; }
             100% { transform: translateY(0); opacity: 1; }
         }
-
-        /* 关闭按钮 */
         #dialog .close {
             background-color: #e74c3c;
             color: white;
@@ -136,20 +114,15 @@
             cursor: pointer;
             font-size: 1.2em;
         }
-
         #dialog .close:hover {
             background-color: #c0392b;
         }
-
-        /* 加载中 */
         #loading {
             text-align: center;
             display: none;
             font-size: 1.5em;
             color: #3498db;
         }
-
-        /* 按钮样式 */
         button {
             background-color: #3498db;
             color: white;
@@ -158,21 +131,16 @@
             cursor: pointer;
             transition: background-color 0.3s ease;
         }
-
         button:hover {
             background-color: #2980b9;
         }
-
         button:disabled {
             background-color: #bdc3c7;
             cursor: not-allowed;
         }
-
-        /* 额外的空间样式 */
         .content-wrapper {
             margin-bottom: 30px;
         }
-
     </style>
 </head>
 <body>
@@ -180,13 +148,23 @@
     <h1>四川方言词典</h1>
 
     <div class="content-wrapper">
-        <!-- 搜索和筛选部分 -->
         <input type="text" id="search" placeholder="搜索词目或普通话对应词..." oninput="debounce(filterWords, 300)()">
         <select id="category" onchange="filterWords()">
             <option value="">按使用场景筛选</option>
         </select>
         <select id="wordType" onchange="filterWords()">
             <option value="">按词性筛选</option>
+            <option value="n.">n.</option>
+            <option value="v.">v.</option>
+            <option value="adj.">adj.</option>
+            <option value="adv.">adv.</option>
+            <option value="pron.">pron.</option>
+            <option value="prep.">prep.</option>
+            <option value="conj.">conj.</option>
+            <option value="interj.">interj.</option>
+            <option value="aux.">aux.</option>
+            <option value="num.">num.</option>
+            <option value="measure.">measure.</option>
         </select>
         <select id="alphabet" onchange="filterWords()">
             <option value="">按拼音首字母筛选</option>
@@ -194,12 +172,9 @@
     </div>
 
     <div id="dictionary"></div>
-
-    <!-- 加载更多按钮和加载提示 -->
     <div id="loading">加载中...</div>
     <button id="loadMoreBtn" onclick="loadMoreData()">加载更多</button>
 
-    <!-- 弹出对话框 -->
     <div id="dialog">
         <div class="content">
             <button class="close" onclick="closeDialog()">关闭</button>
@@ -217,7 +192,7 @@
         let filteredResults = [];
         let currentIndex = 0;
         const itemsPerPage = 20;
-    
+
         async function loadDictionary() {
             document.getElementById("loading").style.display = "block";
             try {
@@ -234,26 +209,25 @@
                 document.getElementById("loading").style.display = "none";
             }
         }
-    
+
         function updateFilters() {
             updateFilterOptions("category", "使用场景");
-            updateFilterOptions("wordType", "词性");
             updateAlphabetFilter();
         }
-    
+
         function updateFilterOptions(elementId, key) {
             const select = document.getElementById(elementId);
             const valueSet = new Set();
-        
+
             dictionary.forEach(item => {
                 if (item[key]) {
-                    const parts = item[key].split(/[\s./、，,]+/);  // 支持 "n./adj.", "n, adj", 等多种分隔
+                    const parts = item[key].split(/[\s./、，,]+/);
                     parts.forEach(part => {
                         if (part.trim()) valueSet.add(part.trim());
                     });
                 }
             });
-        
+
             Array.from(valueSet).sort().forEach(value => {
                 const option = document.createElement("option");
                 option.value = value;
@@ -262,11 +236,9 @@
             });
         }
 
-    
         function updateAlphabetFilter() {
             const select = document.getElementById("alphabet");
             select.innerHTML = '<option value="">按拼音首字母筛选</option>';
-    
             const validItems = dictionary.filter(item => item["四川话拼音"]?.trim());
             const uniqueAlphabets = new Set(
                 validItems.map(item => {
@@ -274,7 +246,7 @@
                     return pinyin.length > 0 ? pinyin[0].toUpperCase() : "";
                 }).filter(letter => /[A-Z]/.test(letter))
             );
-    
+
             Array.from(uniqueAlphabets)
                 .sort()
                 .forEach(letter => {
@@ -284,36 +256,35 @@
                     select.appendChild(option);
                 });
         }
-    
+
         function filterWords() {
             const searchText = document.getElementById("search").value.trim().toLowerCase();
             const categoryFilter = document.getElementById("category").value;
             const wordTypeFilter = document.getElementById("wordType").value;
             const alphabetFilter = document.getElementById("alphabet").value;
-    
-            const filteredData = dictionary.filter(item => {
+
+            filteredResults = dictionary.filter(item => {
                 return (
                     (!searchText || item["词目"].toLowerCase().includes(searchText) || item["普通话对应词"].some(word => word.toLowerCase().includes(searchText))) &&
                     (!categoryFilter || item["使用场景"].includes(categoryFilter)) &&
-                    (!wordTypeFilter || item["词性"]?.includes(wordTypeFilter)) &&
+                    (!wordTypeFilter || (item["词性"] && item["词性"].includes(wordTypeFilter))) &&
                     (!alphabetFilter || item["四川话拼音"].charAt(0).toUpperCase() === alphabetFilter)
                 );
             });
 
-    
             currentIndex = 0;
             renderWords();
         }
-    
+
         function renderWords() {
             const resultContainer = document.getElementById("dictionary");
             const loadMoreBtn = document.getElementById("loadMoreBtn");
-    
+
             if (currentIndex === 0) resultContainer.innerHTML = "";
-    
+
             const nextItems = filteredResults.slice(currentIndex, currentIndex + itemsPerPage);
             currentIndex += itemsPerPage;
-    
+
             const fragment = document.createDocumentFragment();
             nextItems.forEach(item => {
                 const card = document.createElement("div");
@@ -326,21 +297,16 @@
                 card.onclick = () => openDialog(item);
                 fragment.appendChild(card);
             });
-    
+
             resultContainer.appendChild(fragment);
-    
-            // 控制“加载更多”按钮
-            if (currentIndex >= filteredResults.length) {
-                loadMoreBtn.style.display = "none";
-            } else {
-                loadMoreBtn.style.display = "block";
-            }
+
+            loadMoreBtn.style.display = currentIndex >= filteredResults.length ? "none" : "block";
         }
-    
+
         function loadMoreData() {
             renderWords();
         }
-    
+
         function openDialog(item) {
             document.getElementById("dialogTitle").textContent = item["词目"];
             document.getElementById("dialogMandarin").textContent = item["普通话对应词"].join(", ");
@@ -350,11 +316,11 @@
             document.getElementById("dialogPinyin").textContent = item["四川话拼音"];
             document.getElementById("dialog").style.display = "flex";
         }
-    
+
         function closeDialog() {
             document.getElementById("dialog").style.display = "none";
         }
-    
+
         function debounce(func, delay) {
             let timer;
             return function () {
@@ -362,10 +328,8 @@
                 timer = setTimeout(() => func(), delay);
             };
         }
-    
+
         loadDictionary();
     </script>
-
-
 </body>
 </html>
