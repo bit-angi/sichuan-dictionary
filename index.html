@@ -214,32 +214,33 @@
 
     <script>
         let dictionary = [];
-        let filteredDictionary = [];
+        let filteredResults = [];
         let currentIndex = 0;
         const itemsPerPage = 20;
-
+    
         async function loadDictionary() {
             document.getElementById("loading").style.display = "block";
             try {
                 const response = await fetch("sichuan_dict_cleaned.json");
                 if (!response.ok) throw new Error('数据加载失败');
                 dictionary = await response.json();
-                filteredDictionary = [...dictionary];
                 updateFilters();
-                renderWords(filteredDictionary.slice(0, itemsPerPage));
+                filteredResults = [...dictionary];
+                currentIndex = 0;
+                renderWords();
             } catch (error) {
                 console.error('加载失败:', error);
             } finally {
                 document.getElementById("loading").style.display = "none";
             }
         }
-
+    
         function updateFilters() {
             updateFilterOptions("category", "使用场景");
             updateFilterOptions("wordType", "词性");
             updateAlphabetFilter();
         }
-
+    
         function updateFilterOptions(elementId, key) {
             const select = document.getElementById(elementId);
             const uniqueValues = new Set(dictionary.map(item => item[key]).flat());
@@ -250,11 +251,11 @@
                 select.appendChild(option);
             });
         }
-
+    
         function updateAlphabetFilter() {
             const select = document.getElementById("alphabet");
             select.innerHTML = '<option value="">按拼音首字母筛选</option>';
-
+    
             const validItems = dictionary.filter(item => item["四川话拼音"]?.trim());
             const uniqueAlphabets = new Set(
                 validItems.map(item => {
@@ -262,7 +263,7 @@
                     return pinyin.length > 0 ? pinyin[0].toUpperCase() : "";
                 }).filter(letter => /[A-Z]/.test(letter))
             );
-
+    
             Array.from(uniqueAlphabets)
                 .sort()
                 .forEach(letter => {
@@ -272,14 +273,14 @@
                     select.appendChild(option);
                 });
         }
-
+    
         function filterWords() {
             const searchText = document.getElementById("search").value.trim().toLowerCase();
             const categoryFilter = document.getElementById("category").value;
             const wordTypeFilter = document.getElementById("wordType").value;
             const alphabetFilter = document.getElementById("alphabet").value;
-
-            const filteredData = filteredDictionary.filter(item => {
+    
+            filteredResults = dictionary.filter(item => {
                 return (
                     (!searchText || item["词目"].toLowerCase().includes(searchText) || item["普通话对应词"].some(word => word.toLowerCase().includes(searchText))) &&
                     (!categoryFilter || item["使用场景"].includes(categoryFilter)) &&
@@ -287,17 +288,22 @@
                     (!alphabetFilter || item["四川话拼音"].charAt(0).toUpperCase() === alphabetFilter)
                 );
             });
-
+    
             currentIndex = 0;
-            renderWords(filteredData.slice(currentIndex, currentIndex + itemsPerPage));
+            renderWords();
         }
-
-        function renderWords(data) {
+    
+        function renderWords() {
             const resultContainer = document.getElementById("dictionary");
-            resultContainer.innerHTML = "";
-
+            const loadMoreBtn = document.getElementById("loadMoreBtn");
+    
+            if (currentIndex === 0) resultContainer.innerHTML = "";
+    
+            const nextItems = filteredResults.slice(currentIndex, currentIndex + itemsPerPage);
+            currentIndex += itemsPerPage;
+    
             const fragment = document.createDocumentFragment();
-            data.forEach(item => {
+            nextItems.forEach(item => {
                 const card = document.createElement("div");
                 card.className = "card";
                 card.innerHTML = `
@@ -305,20 +311,24 @@
                     <p>${item["核心释义"]}</p>
                     <div>${item["使用场景"].map(scene => `<span class="badge">${scene}</span>`).join("")}</div>
                 `;
-                card.onclick = () => openDialog(item);  // 点击弹出对话框
+                card.onclick = () => openDialog(item);
                 fragment.appendChild(card);
             });
-
+    
             resultContainer.appendChild(fragment);
-        }
-
-        function loadMoreData() {
-            if (currentIndex < filteredDictionary.length) {
-                currentIndex += itemsPerPage;
-                renderWords(filteredDictionary.slice(currentIndex, currentIndex + itemsPerPage));
+    
+            // 控制“加载更多”按钮
+            if (currentIndex >= filteredResults.length) {
+                loadMoreBtn.style.display = "none";
+            } else {
+                loadMoreBtn.style.display = "block";
             }
         }
-
+    
+        function loadMoreData() {
+            renderWords();
+        }
+    
         function openDialog(item) {
             document.getElementById("dialogTitle").textContent = item["词目"];
             document.getElementById("dialogMandarin").textContent = item["普通话对应词"].join(", ");
@@ -328,11 +338,11 @@
             document.getElementById("dialogPinyin").textContent = item["四川话拼音"];
             document.getElementById("dialog").style.display = "flex";
         }
-
+    
         function closeDialog() {
             document.getElementById("dialog").style.display = "none";
         }
-
+    
         function debounce(func, delay) {
             let timer;
             return function () {
@@ -340,9 +350,10 @@
                 timer = setTimeout(() => func(), delay);
             };
         }
-
+    
         loadDictionary();
     </script>
+
 
 </body>
 </html>
