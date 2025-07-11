@@ -237,20 +237,9 @@
     
         function updateFilters() {
             updateFilterOptions("category", "使用场景");
+            updateFilterOptions("wordType", "词性");
             updateAlphabetFilter();
-        
-            // 固定词性选项
-            const wordTypeSelect = document.getElementById("wordType");
-            wordTypeSelect.innerHTML = '<option value="">按词性筛选</option>';
-            const commonTypes = ["n.", "v.", "adj.", "adv.", "pron.", "prep.", "conj.", "interj."];
-            commonTypes.forEach(type => {
-                const option = document.createElement("option");
-                option.value = type;
-                option.textContent = type;
-                wordTypeSelect.appendChild(option);
-            });
         }
-
     
         function updateFilterOptions(elementId, key) {
             const select = document.getElementById(elementId);
@@ -301,20 +290,20 @@
             const categoryFilter = document.getElementById("category").value;
             const wordTypeFilter = document.getElementById("wordType").value;
             const alphabetFilter = document.getElementById("alphabet").value;
-        
-            filteredResults = dictionary.filter(item => {
-                const matchesSearch = !searchText || item["词目"]?.toLowerCase().includes(searchText) || item["普通话对应词"]?.some(word => word.toLowerCase().includes(searchText));
-                const matchesCategory = !categoryFilter || item["使用场景"]?.includes(categoryFilter);
-                const matchesWordType = !wordTypeFilter || (item["词性"] && item["词性"].includes(wordTypeFilter));  // 部分匹配
-                const matchesAlphabet = !alphabetFilter || (item["四川话拼音"] && item["四川话拼音"].charAt(0).toUpperCase() === alphabetFilter);
-        
-                return matchesSearch && matchesCategory && matchesWordType && matchesAlphabet;
+    
+            const filteredData = dictionary.filter(item => {
+                return (
+                    (!searchText || item["词目"].toLowerCase().includes(searchText) || item["普通话对应词"].some(word => word.toLowerCase().includes(searchText))) &&
+                    (!categoryFilter || item["使用场景"].includes(categoryFilter)) &&
+                    (!wordTypeFilter || item["词性"]?.includes(wordTypeFilter)) &&
+                    (!alphabetFilter || item["四川话拼音"].charAt(0).toUpperCase() === alphabetFilter)
+                );
             });
-        
+
+    
             currentIndex = 0;
             renderWords();
         }
-
     
         function renderWords() {
             const resultContainer = document.getElementById("dictionary");
