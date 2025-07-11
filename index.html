@@ -1,172 +1,333 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>四川方言词典</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: auto;
-            padding: 20px;
-        }
-        input, select {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-        }
-        .card {
-            border: 1px solid #ddd;
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        .card:hover {
-            background: #f5f5f5;
-        }
-        .badge {
-            background-color: #007bff;
-            color: white;
-            padding: 3px 6px;
-            border-radius: 3px;
-            margin-right: 5px;
-        }
-        /* 对话框样式 */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-            position: relative;
-        }
-        .close {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 20px;
-            cursor: pointer;
-        }
-        .audio-btn {
-            background: #28a745;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            cursor: pointer;
-            border-radius: 3px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>四川方言词典</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #70a1d7;
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+      overflow-y: scroll;
+      max-height: 80vh;
+      box-sizing: border-box;
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      font-size: 2.5em;
+      margin-bottom: 20px;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    input:focus, select:focus, button:focus {
+      outline: none;
+      border-color: #3498db;
+    }
+
+    #search {
+      background-color: #f9f9f9;
+    }
+
+    .card {
+      background-color: white;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .card h3 {
+      font-size: 1.8em;
+      color: #2c3e50;
+    }
+
+    .card p {
+      font-size: 1.1em;
+      color: #555;
+    }
+
+    .badge {
+      background-color: #3498db;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 20px;
+      margin-right: 5px;
+      font-size: 0.9em;
+    }
+
+    #dialog {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+      animation: fadeIn 0.3s ease;
+    }
+
+    #dialog .content {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      width: 80%;
+      max-width: 600px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      animation: slideIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+
+    @keyframes slideIn {
+      0% { transform: translateY(-30px); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+
+    #dialog .close {
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1.2em;
+    }
+
+    #loading {
+      text-align: center;
+      display: none;
+      font-size: 1.5em;
+      color: #3498db;
+    }
+
+    button {
+      background-color: #3498db;
+      color: white;
+      font-size: 1.1em;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+
+    button:disabled {
+      background-color: #bdc3c7;
+      cursor: not-allowed;
+    }
+
+    .content-wrapper {
+      margin-bottom: 30px;
+    }
+  </style>
 </head>
 <body>
 
-    <h1>四川方言词典</h1>
-    <input type="text" id="search" placeholder="搜索词目或普通话对应词..." oninput="filterWords()">
+  <h1>四川方言词典</h1>
+
+  <div class="content-wrapper">
+    <input type="text" id="search" placeholder="搜索词目或普通话对应词..." oninput="debounce(filterWords, 300)()">
     <select id="category" onchange="filterWords()">
-        <option value="">按使用场景筛选</option>
+      <option value="">按使用场景筛选</option>
     </select>
+    <select id="wordType" onchange="filterWords()">
+      <option value="">按词性筛选</option>
+      <option value="n.">n.</option>
+      <option value="v.">v.</option>
+      <option value="adj.">adj.</option>
+      <option value="adv.">adv.</option>
+      <option value="pron.">pron.</option>
+      <option value="prep.">prep.</option>
+      <option value="conj.">conj.</option>
+      <option value="interj.">interj.</option>
+      <option value="aux.">aux.</option>
+      <option value="num.">num.</option>
+      <option value="measure.">measure.</option>
+    </select>
+    <select id="alphabet" onchange="filterWords()">
+      <option value="">按拼音首字母筛选</option>
+    </select>
+  </div>
 
-    <div id="dictionary"></div>
+  <div id="dictionary"></div>
+  <div id="loading">加载中...</div>
+  <button id="loadMoreBtn" onclick="loadMoreData()">加载更多</button>
 
-    <!-- 对话框 -->
-    <div id="wordModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h2 id="modalWord"></h2>
-            <p><strong>发音:</strong> <span id="modalPronunciation"></span>
-                <button class="audio-btn" onclick="playAudio()">🔊 播放</button>
-            </p>
-            <p><strong>核心释义:</strong> <span id="modalDefinition"></span></p>
-            <p><strong>普通话对应词:</strong> <span id="modalMandarin"></span></p>
-            <p><strong>例句:</strong> <span id="modalExample"></span></p>
-            <p><strong>使用场景:</strong> <span id="modalCategory"></span></p>
-            <audio id="audioPlayer"></audio>
-        </div>
+  <div id="dialog">
+    <div class="content">
+      <button class="close" onclick="closeDialog()">关闭</button>
+      <h3 id="dialogTitle"></h3>
+      <p><strong>普通话对应词:</strong> <span id="dialogMandarin"></span></p>
+      <p><strong>核心释义:</strong> <span id="dialogMeaning"></span></p>
+      <p><strong>使用场景:</strong> <span id="dialogCategory"></span></p>
+      <p><strong>词性:</strong> <span id="dialogWordType"></span></p>
+      <p><strong>拼音:</strong> <span id="dialogPinyin"></span></p>
     </div>
+  </div>
 
-    <script>
-        let dictionary = [];
+  <script>
+    let dictionary = [];
+    let filteredResults = [];
+    let currentIndex = 0;
+    const itemsPerPage = 20;
 
-        async function loadDictionary() {
-            const response = await fetch("sichuan_dict_cleaned.json");
-            dictionary = await response.json();
-            updateCategoryFilter();
-            filterWords();
+    async function loadDictionary() {
+      document.getElementById("loading").style.display = "block";
+      try {
+        const response = await fetch("sichuan_dict_cleaned.json");
+        if (!response.ok) throw new Error('数据加载失败');
+        dictionary = await response.json();
+        updateFilters();
+        filteredResults = [...dictionary]; // ✅ 初次加载必须赋值
+        currentIndex = 0;
+        renderWords();
+      } catch (error) {
+        console.error('加载失败:', error);
+      } finally {
+        document.getElementById("loading").style.display = "none";
+      }
+    }
+
+    function updateFilters() {
+      updateFilterOptions("category", "使用场景");
+      updateAlphabetFilter();
+    }
+
+    function updateFilterOptions(elementId, key) {
+      const select = document.getElementById(elementId);
+      const valueSet = new Set();
+
+      dictionary.forEach(item => {
+        if (item[key]) {
+          const parts = item[key].split(/[\s./、，,]+/);
+          parts.forEach(part => {
+            if (part.trim()) valueSet.add(part.trim());
+          });
         }
+      });
 
-        function updateCategoryFilter() {
-            const categorySelect = document.getElementById("category");
-            const uniqueCategories = new Set(dictionary.flatMap(item => item["使用场景"]));
-            uniqueCategories.forEach(cat => {
-                const option = document.createElement("option");
-                option.value = cat;
-                option.textContent = cat;
-                categorySelect.appendChild(option);
-            });
-        }
+      Array.from(valueSet).sort().forEach(value => {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = value;
+        select.appendChild(option);
+      });
+    }
 
-        function filterWords() {
-            const searchText = document.getElementById("search").value.trim();
-            const categoryFilter = document.getElementById("category").value;
-            const resultContainer = document.getElementById("dictionary");
+    function updateAlphabetFilter() {
+      const select = document.getElementById("alphabet");
+      const validItems = dictionary.filter(item => item["四川话拼音"]?.trim());
+      const uniqueAlphabets = new Set(
+        validItems.map(item => item["四川话拼音"].charAt(0).toUpperCase())
+                  .filter(letter => /[A-Z]/.test(letter))
+      );
 
-            resultContainer.innerHTML = "";
+      Array.from(uniqueAlphabets).sort().forEach(letter => {
+        const option = document.createElement("option");
+        option.value = letter;
+        option.textContent = letter;
+        select.appendChild(option);
+      });
+    }
 
-            const filteredData = dictionary.filter(item =>
-                item["词目"].includes(searchText) ||
-                item["普通话对应词"].some(word => word.includes(searchText))
-            ).filter(item => categoryFilter ? item["使用场景"].includes(categoryFilter) : true);
+    function filterWords() {
+      const searchText = document.getElementById("search").value.trim().toLowerCase();
+      const categoryFilter = document.getElementById("category").value;
+      const wordTypeFilter = document.getElementById("wordType").value;
+      const alphabetFilter = document.getElementById("alphabet").value;
 
-            filteredData.forEach(item => {
-                const card = document.createElement("div");
-                card.className = "card";
-                card.innerHTML = `
-                    <h3>${item["词目"]}</h3>
-                    <p>${item["核心释义"]}</p>
-                    <div>${item["使用场景"].map(scene => `<span class="badge">${scene}</span>`).join("")}</div>
-                `;
-                card.onclick = () => openModal(item);
-                resultContainer.appendChild(card);
-            });
-        }
+      filteredResults = dictionary.filter(item => {
+        return (
+          (!searchText || item["词目"].toLowerCase().includes(searchText) || item["普通话对应词"].some(word => word.toLowerCase().includes(searchText))) &&
+          (!categoryFilter || item["使用场景"]?.includes(categoryFilter)) &&
+          (!wordTypeFilter || (item["词性"] && item["词性"].includes(wordTypeFilter))) &&
+          (!alphabetFilter || item["四川话拼音"].charAt(0).toUpperCase() === alphabetFilter)
+        );
+      });
 
-        function openModal(item) {
-            document.getElementById("modalWord").textContent = item["词目"];
-            document.getElementById("modalPronunciation").textContent = item["发音"];
-            document.getElementById("modalDefinition").textContent = item["核心释义"];
-            document.getElementById("modalMandarin").textContent = item["普通话对应词"].join(", ");
-            document.getElementById("modalExample").textContent = item["例句"];
-            document.getElementById("modalCategory").innerHTML = item["使用场景"].map(scene => `<span class="badge">${scene}</span>`).join(" ");
+      currentIndex = 0;
+      renderWords();
+    }
 
-            document.getElementById("audioPlayer").src = item["发音音频"];
-            document.getElementById("wordModal").style.display = "flex";
-        }
+    function renderWords() {
+      const container = document.getElementById("dictionary");
+      const btn = document.getElementById("loadMoreBtn");
+      if (currentIndex === 0) container.innerHTML = "";
 
-        function playAudio() {
-            document.getElementById("audioPlayer").play();
-        }
+      const nextItems = filteredResults.slice(currentIndex, currentIndex + itemsPerPage);
+      currentIndex += itemsPerPage;
 
-        function closeModal() {
-            document.getElementById("wordModal").style.display = "none";
-        }
+      const frag = document.createDocumentFragment();
+      nextItems.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <h3>${item["词目"]}</h3>
+          <p>${item["核心释义"]}</p>
+          <div>${item["使用场景"]?.map(scene => `<span class="badge">${scene}</span>`).join("")}</div>
+        `;
+        card.onclick = () => openDialog(item);
+        frag.appendChild(card);
+      });
 
-        loadDictionary();
-    </script>
+      container.appendChild(frag);
+      btn.style.display = currentIndex >= filteredResults.length ? "none" : "block";
+    }
+
+    function loadMoreData() {
+      renderWords();
+    }
+
+    function openDialog(item) {
+      document.getElementById("dialogTitle").textContent = item["词目"];
+      document.getElementById("dialogMandarin").textContent = item["普通话对应词"].join(", ");
+      document.getElementById("dialogMeaning").textContent = item["核心释义"];
+      document.getElementById("dialogCategory").textContent = item["使用场景"].join(", ");
+      document.getElementById("dialogWordType").textContent = item["词性"];
+      document.getElementById("dialogPinyin").textContent = item["四川话拼音"];
+      document.getElementById("dialog").style.display = "flex";
+    }
+
+    function closeDialog() {
+      document.getElementById("dialog").style.display = "none";
+    }
+
+    function debounce(func, delay) {
+      let timer;
+      return function () {
+        clearTimeout(timer);
+        timer = setTimeout(() => func(), delay);
+      };
+    }
+
+    loadDictionary();
+  </script>
 
 </body>
 </html>
