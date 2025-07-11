@@ -243,14 +243,25 @@
     
         function updateFilterOptions(elementId, key) {
             const select = document.getElementById(elementId);
-            const uniqueValues = new Set(dictionary.map(item => item[key]).flat());
-            uniqueValues.forEach(value => {
+            const valueSet = new Set();
+        
+            dictionary.forEach(item => {
+                if (item[key]) {
+                    const parts = item[key].split(/[\s./、，,]+/);  // 支持 "n./adj.", "n, adj", 等多种分隔
+                    parts.forEach(part => {
+                        if (part.trim()) valueSet.add(part.trim());
+                    });
+                }
+            });
+        
+            Array.from(valueSet).sort().forEach(value => {
                 const option = document.createElement("option");
                 option.value = value;
                 option.textContent = value;
                 select.appendChild(option);
             });
         }
+
     
         function updateAlphabetFilter() {
             const select = document.getElementById("alphabet");
@@ -280,14 +291,15 @@
             const wordTypeFilter = document.getElementById("wordType").value;
             const alphabetFilter = document.getElementById("alphabet").value;
     
-            filteredResults = dictionary.filter(item => {
+            const filteredData = dictionary.filter(item => {
                 return (
                     (!searchText || item["词目"].toLowerCase().includes(searchText) || item["普通话对应词"].some(word => word.toLowerCase().includes(searchText))) &&
                     (!categoryFilter || item["使用场景"].includes(categoryFilter)) &&
-                    (!wordTypeFilter || item["词性"] === wordTypeFilter) &&
+                    (!wordTypeFilter || item["词性"]?.includes(wordTypeFilter)) &&
                     (!alphabetFilter || item["四川话拼音"].charAt(0).toUpperCase() === alphabetFilter)
                 );
             });
+
     
             currentIndex = 0;
             renderWords();
